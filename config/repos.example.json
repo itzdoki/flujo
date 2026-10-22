@@ -1,0 +1,27 @@
+{
+  "api": {
+    "url": "https://github.com/acme/api.git",
+    "base": "develop",
+    "install": "pnpm install --frozen-lockfile",
+    "typecheck": "npx tsc --noEmit -p tsconfig.json",
+    "lint": "npx eslint {files}",
+    "test": "npx jest --findRelatedTests {files} --passWithNoTests"
+  },
+  "web": {
+    "url": "https://github.com/acme/web.git",
+    "base": "main",
+    "install": "npm ci",
+    "typecheck": "npm run typecheck",
+    "lint": "npx eslint {files}",
+    "test": "npx vitest related {files} --run --passWithNoTests",
+    "notes": "Frontend en React. Los componentes nuevos van con su story."
+  },
+  "legacy": {
+    "url": "https://github.com/acme/legacy.git",
+    "base": "master",
+    "install": "npm ci",
+    "test": "npm test",
+    "generate": [{ "cmd": "node scripts/build-inventory.js", "commit": "docs: regenerate the inventory" }],
+    "notes": "JavaScript legacy. Solo lo que el ticket pida explícitamente."
+  }
+}

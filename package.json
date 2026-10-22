@@ -1,0 +1,17 @@
+{
+  "name": "flujo",
+  "private": true,
+  "type": "module",
+  "description": "Orquestador que lleva issues de Linear a PRs en draft llamando a Claude Code en modo headless",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "flujo": "node src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}

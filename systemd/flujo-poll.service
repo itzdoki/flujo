@@ -1,0 +1,11 @@
+[Unit]
+Description=flujo: toma la siguiente issue de Linear con la etiqueta del flujo
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Work/flujo
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecStart=/usr/bin/node src/cli.ts poll
+TimeoutStartSec=8h
+Nice=10

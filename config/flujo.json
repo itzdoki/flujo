@@ -1,0 +1,31 @@
+{
+  "linearLabel": "flujo",
+  "maxFixRounds": 2,
+  "reviewRounds": 2,
+  "planLimits": { "maxTasks": 5, "maxFiles": 20 },
+  "acceptanceAllow": [
+    "npx jest",
+    "npx vitest",
+    "npx tsc",
+    "npx eslint",
+    "npm test",
+    "npm run test",
+    "npm run typecheck",
+    "npm run build",
+    "pnpm test",
+    "pnpm run build",
+    "node --test",
+    "git grep",
+    "test -f",
+    "test -e"
+  ],
+  "steps": {
+    "enrich": { "model": "sonnet", "effort": "medium", "timeoutMin": 20 },
+    "plan": { "model": "opus", "effort": "high", "timeoutMin": 20 },
+    "implement": { "model": "sonnet", "effort": "xhigh", "timeoutMin": 45 },
+    "fix": { "model": "sonnet", "effort": "high", "timeoutMin": 30 },
+    "review": { "model": "opus", "effort": "high", "timeoutMin": 25 },
+    "release": { "model": "sonnet", "effort": "medium", "timeoutMin": 10 },
+    "qaNotes": { "model": "opus", "effort": "high", "timeoutMin": 15 }
+  }
+}

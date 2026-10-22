@@ -1,0 +1,10 @@
+[Unit]
+Description=flujo cada 30 minutos, en horario de trabajo
+
+[Timer]
+# Lunes, martes, jueves y viernes de 11 a 20; miércoles de 9 a 18. El último arranque es media hora antes del cierre.
+OnCalendar=Mon,Tue,Thu,Fri *-*-* 11..19:00,30:00
+OnCalendar=Wed *-*-* 09..17:00,30:00
+
+[Install]
+WantedBy=timers.target
