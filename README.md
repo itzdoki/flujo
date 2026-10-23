@@ -14,8 +14,8 @@ Lleva una issue de Linear hasta PRs en draft. Es un programa en TypeScript que l
 | check | código | — | typecheck, lint y tests de lo tocado |
 | review | agente, solo lectura | opus / high | hallazgos; los `blocker`/`major` vuelven a un agente de fix |
 | qa | código | — | corre los comandos del plan; si fallan, fix y de nuevo |
-| release | agente + código | haiku / low | aplasta los fixups, verifica que cada commit compile solo, push y PR en draft |
-| qaNotes | agente | opus / high | guion de pruebas manuales como comentario en la issue |
+| release | agente + código | haiku / high | aplasta los fixups, verifica que cada commit compile solo, push y PR en draft |
+| qaNotes | agente | sonnet / high | guion de pruebas manuales como comentario en la issue |
 
 El que verifica nunca arregla. Cada falla va a un agente de fix (sonnet / high), que la corrige con `git commit --fixup` sobre el commit de su tarea. Hay un tope de rondas (`maxFixRounds`) y, si se pasa, la corrida queda en `failed`.
 

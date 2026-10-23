@@ -25,7 +25,7 @@
     "implement": { "model": "sonnet", "effort": "xhigh", "timeoutMin": 45 },
     "fix": { "model": "sonnet", "effort": "high", "timeoutMin": 30 },
     "review": { "model": "opus", "effort": "high", "timeoutMin": 25 },
-    "release": { "model": "sonnet", "effort": "medium", "timeoutMin": 10 },
-    "qaNotes": { "model": "opus", "effort": "high", "timeoutMin": 15 }
+    "release": { "model": "haiku", "effort": "high", "timeoutMin": 10 },
+    "qaNotes": { "model": "sonnet", "effort": "high", "timeoutMin": 15 }
   }
 }
