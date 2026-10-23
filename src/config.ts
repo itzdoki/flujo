@@ -25,7 +25,8 @@ export type RepoConfig = {
   generate?: { cmd: string; commit: string }[];
 };
 
-export type StepName = 'enrich' | 'plan' | 'implement' | 'fix' | 'review' | 'release' | 'qaNotes';
+// `reviewRecheck` usa el prompt de `review`: solo cambia el modelo de la vuelta que verifica los fixes.
+export type StepName = 'enrich' | 'plan' | 'implement' | 'fix' | 'review' | 'reviewRecheck' | 'release' | 'qaNotes';
 
 export type StepConfig = { model: string; effort: string; timeoutMin: number };
 

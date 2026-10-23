@@ -12,7 +12,7 @@ Lleva una issue de Linear hasta PRs en draft. Es un programa en TypeScript que l
 | plan | agente, solo lectura | opus / high | `plan.json`: tareas (una por commit) y criterios de aceptación como comandos |
 | implement | un agente por tarea | sonnet / xhigh | un commit por tarea; después corre el typecheck |
 | check | código | — | typecheck, lint y tests de lo tocado |
-| review | agente, solo lectura | opus / high | hallazgos; los `blocker`/`major` vuelven a un agente de fix |
+| review | agente, solo lectura | opus / high; las vueltas que verifican fixes, sonnet / high | hallazgos; los `blocker`/`major` vuelven a un agente de fix |
 | qa | código | — | corre los comandos del plan; si fallan, fix y de nuevo |
 | release | agente + código | haiku / high | aplasta los fixups, verifica que cada commit compile solo, push y PR en draft |
 | qaNotes | agente | sonnet / high | guion de pruebas manuales como comentario en la issue |

@@ -401,7 +401,8 @@ async function reviewPhase(ctx: Ctx, plan: Plan, repos: string[]): Promise<Findi
     }
     const review = await agent<Review>({
       run: ctx.run,
-      step: 'review',
+      // La primera vuelta busca problemas; las siguientes verifican fixes y alcanza un modelo más barato.
+      step: round === 1 ? 'review' : 'reviewRecheck',
       label: `review-${round}`,
       cwd: REPOS_DIR,
       addDirs: [ctx.run.dir],
