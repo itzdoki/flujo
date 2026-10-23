@@ -585,8 +585,14 @@ function repoList(repos: string[]): string {
 }
 
 function repoNotes(repo: string): string {
-  const notes = repoConfig(repo).notes;
-  return notes ? `Notas del repo: ${notes}` : '';
+  const { notes, generate } = repoConfig(repo);
+  const lines = notes ? [`Notas del repo: ${notes}`] : [];
+  // Sin esto, un test que avisa «archivo generado desactualizado» lleva al agente a correr el generador, que tiene denegado.
+  if (generate?.length) {
+    const cmds = generate.map((g) => `\`${g.cmd}\``).join(', ');
+    lines.push(`Lo generado lo regenera el flujo después de implementar (${cmds}): no lo corras ni edites a mano lo que produce. Si un test falla solo porque eso quedó desactualizado, ignóralo.`);
+  }
+  return lines.join('\n\n');
 }
 
 function planOutline(plan: Plan): string {
