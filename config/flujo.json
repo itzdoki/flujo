@@ -2,7 +2,7 @@
   "linearLabel": "flujo",
   "maxFixRounds": 2,
   "reviewRounds": 2,
-  "planLimits": { "maxTasks": 5, "maxFiles": 20 },
+  "planLimits": { "maxTasks": 7, "maxFiles": 20 },
   "acceptanceAllow": [
     "npx jest",
     "npx vitest",
