@@ -104,6 +104,7 @@ async function pipeline(run: Run, opts: RunOpts): Promise<void> {
   };
   leave(ctx, 'enrich');
 
+  await estimateBrake(ctx, enrich);
   const plan = await planPhase(ctx, enrich.repos);
   await sizeBrake(ctx, plan);
   const repos = unique(plan.tasks.map((t) => t.repo));
@@ -233,6 +234,18 @@ async function planPhase(ctx: Ctx, repos: string[]): Promise<Plan> {
   }
   leave(ctx, 'plan');
   return plan;
+}
+
+// El mismo freno, pero con la estimación de enrich: frena antes de pagar el plan, que es el paso más caro.
+async function estimateBrake(ctx: Ctx, enrich: Enrich): Promise<void> {
+  const { maxTasks, maxFiles } = config().planLimits;
+  const est = enrich.estimate;
+  if (!est || ctx.run.state.bigPlanOk || ctx.run.read('plan.json') || (est.tasks <= maxTasks && est.files <= maxFiles)) return;
+  const id = ctx.issue.identifier;
+  const msg = `issue grande según enrich (~${est.tasks} tareas, ~${est.files} archivos): revisar spec.md y correr \`node src/cli.ts run ${id}\` para seguir`;
+  ctx.run.set({ sizeHold: true });
+  await notify(`${id}: issue grande, frenada antes del plan`, msg);
+  throw new StopHere(msg);
 }
 
 // Una issue «chica» puede salir grande (7 tareas, 35 archivos): antes de gastar en implementar, que la vea una persona.

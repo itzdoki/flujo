@@ -8,7 +8,7 @@ Lleva una issue de Linear hasta PRs en draft. Es un programa en TypeScript que l
 
 | Fase | Quién | Modelo / esfuerzo | Qué deja |
 |---|---|---|---|
-| enrich | agente, solo lectura | sonnet / medium | `spec.md`; o preguntas en Linear si falta algo caro de suponer |
+| enrich | agente, solo lectura | sonnet / medium | `spec.md` y una estimación de tareas y archivos; o preguntas en Linear si falta algo caro de suponer. Si la estimación se pasa de `planLimits`, frena antes del plan |
 | plan | agente, solo lectura | opus / high | `plan.json`: tareas (una por commit) y criterios de aceptación como comandos |
 | implement | un agente por tarea | sonnet / xhigh | un commit por tarea; después corre el typecheck |
 | check | código | — | typecheck, lint y tests de lo tocado |

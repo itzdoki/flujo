@@ -3,6 +3,8 @@ export type Enrich = {
   repos: string[];
   assumptions: string[];
   blocking_questions: string[];
+  // Tamaño estimado del plan, para frenar antes de pagar el plan si se pasa de los límites.
+  estimate?: { tasks: number; files: number };
 };
 
 export type PlanTask = {
@@ -55,6 +57,7 @@ export function enrichSchema(repos: string[]): object {
     repos: { type: 'array', items: oneOf(repos), minItems: 1 },
     assumptions: strList,
     blocking_questions: strList,
+    estimate: obj({ tasks: { type: 'integer', minimum: 1 }, files: { type: 'integer', minimum: 1 } }),
   });
 }
 
