@@ -236,13 +236,17 @@ async function planPhase(ctx: Ctx, repos: string[]): Promise<Plan> {
   return plan;
 }
 
+// Los tests no cuentan para el límite de archivos: si contaran, frenarían justo a las issues bien testeadas.
+const TEST_FILE = /(^|\/)__tests__\/|\.(spec|test)\.[cm]?[jt]sx?$/;
+const isTestFile = (path: string) => TEST_FILE.test(path);
+
 // El mismo freno, pero con la estimación de enrich: frena antes de pagar el plan, que es el paso más caro.
 async function estimateBrake(ctx: Ctx, enrich: Enrich): Promise<void> {
   const { maxTasks, maxFiles } = config().planLimits;
   const est = enrich.estimate;
   if (!est || ctx.run.state.bigPlanOk || ctx.run.read('plan.json') || (est.tasks <= maxTasks && est.files <= maxFiles)) return;
   const id = ctx.issue.identifier;
-  const msg = `issue grande según enrich (~${est.tasks} tareas, ~${est.files} archivos): revisar spec.md y correr \`node src/cli.ts run ${id}\` para seguir`;
+  const msg = `issue grande según enrich (~${est.tasks} tareas, ~${est.files} archivos sin contar tests): revisar spec.md y correr \`node src/cli.ts run ${id}\` para seguir`;
   ctx.run.set({ sizeHold: true });
   await notify(`${id}: issue grande, frenada antes del plan`, msg);
   throw new StopHere(msg);
@@ -251,10 +255,10 @@ async function estimateBrake(ctx: Ctx, enrich: Enrich): Promise<void> {
 // Una issue «chica» puede salir grande (7 tareas, 35 archivos): antes de gastar en implementar, que la vea una persona.
 async function sizeBrake(ctx: Ctx, plan: Plan): Promise<void> {
   const { maxTasks, maxFiles } = config().planLimits;
-  const files = unique(plan.tasks.flatMap((t) => t.files)).length;
+  const files = unique(plan.tasks.flatMap((t) => t.files)).filter((f) => !isTestFile(f)).length;
   if (ctx.run.state.bigPlanOk || (plan.tasks.length <= maxTasks && files <= maxFiles)) return;
   const id = ctx.issue.identifier;
-  const msg = `plan grande (${plan.tasks.length} tareas, ${files} archivos): revisar spec.md y plan.json y correr \`node src/cli.ts run ${id}\` para seguir`;
+  const msg = `plan grande (${plan.tasks.length} tareas, ${files} archivos sin contar tests): revisar spec.md y plan.json y correr \`node src/cli.ts run ${id}\` para seguir`;
   ctx.run.set({ sizeHold: true });
   await notify(`${id}: plan grande, frenado antes de implementar`, msg);
   throw new StopHere(msg);

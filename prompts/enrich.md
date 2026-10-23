@@ -26,4 +26,4 @@ Estás en `{{reposDir}}`. Cada carpeta es un clon actualizado en su rama base:
 4. `repos`: solo los repos que hay que modificar.
 5. `assumptions`: lo que decidiste porque el ticket no lo dice, uno por ítem. El flujo los agrega al final del spec.
 6. `blocking_questions`: vacía, salvo que falte algo que no se puede deducir del ticket ni del código **y** equivocarse sea caro (dinero, datos de clientes, producción, contratos con otros equipos). Si un supuesto razonable alcanza, úsalo.
-7. `estimate`: cuántas tareas (un commit cada una) y cuántos archivos distintos va a tocar el plan, contando tests y archivos nuevos. Estima con lo que viste en el código, sin redondear para abajo: si se pasa del límite, el flujo frena antes de planificar para que una persona revise el spec.
+7. `estimate`: cuántas tareas (un commit cada una) y cuántos archivos distintos va a tocar el plan, contando los nuevos pero **no** los de test (`*.spec.*`, `*.test.*`, `__tests__/`). Estima con lo que viste en el código, sin redondear para abajo: si se pasa del límite, el flujo frena antes de planificar para que una persona revise el spec.

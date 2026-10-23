@@ -34,7 +34,7 @@ export type Config = {
   linearLabel: string;
   maxFixRounds: number;
   reviewRounds: number;
-  // Un plan más grande que esto se detiene antes de implementar hasta que una persona lo revise.
+  // Un plan más grande que esto se detiene antes de implementar hasta que una persona lo revise. Los tests no cuentan como archivos.
   planLimits: { maxTasks: number; maxFiles: number };
   acceptanceAllow: string[];
   steps: Record<StepName, StepConfig>;
