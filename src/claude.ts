@@ -125,7 +125,10 @@ export async function agent<T>(opts: AgentOpts): Promise<T> {
 
   opts.run.log(`→ ${opts.label} (${step.model}/${step.effort})`);
   const started = Date.now();
-  const res = await sh('claude', args, { cwd: opts.cwd, input: opts.prompt, timeoutMs: step.timeoutMin * 60_000 });
+  // Caché de 5 min y no la de 1 h que pone la suscripción: cada turno la renueva y ningún paso queda quieto 5 min,
+  // así que la de 1 h solo cuesta más al escribirla (2× contra 1,25×).
+  const env = { ...process.env, CLAUDE_CODE_PROMPT_CACHE_TTL: process.env.CLAUDE_CODE_PROMPT_CACHE_TTL ?? '5m' };
+  const res = await sh('claude', args, { cwd: opts.cwd, input: opts.prompt, timeoutMs: step.timeoutMin * 60_000, env });
 
   let parsed: ClaudeResult | undefined;
   try {
