@@ -41,10 +41,13 @@ export async function prepareBranch(repo: string, branch: string): Promise<void>
   else await git(repo, 'checkout', '--quiet', '--no-track', '-b', branch, baseRef(repo));
 }
 
+const LOCKFILES = ['pnpm-lock.yaml', 'package-lock.json'];
+const DEP_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies'];
+
 // Reinstala solo si cambió el lockfile desde la última instalación.
 export async function installDeps(repo: string): Promise<void> {
   const dir = repoDir(repo);
-  const locks = ['pnpm-lock.yaml', 'package-lock.json'].map((f) => join(dir, f)).filter((f) => existsSync(f));
+  const locks = LOCKFILES.map((f) => join(dir, f)).filter((f) => existsSync(f));
   if (!locks.length) return;
   const hash = createHash('sha256');
   for (const f of locks) hash.update(readFileSync(f));
@@ -88,6 +91,30 @@ export async function fileAt(repo: string, sha: string, path: string): Promise<s
 
 export async function changedFiles(repo: string): Promise<string[]> {
   return lines(await git(repo, 'diff', '--name-only', '--diff-filter=ACMR', `${baseRef(repo)}...HEAD`));
+}
+
+// nombre → «campo rango»: pasar un paquete de devDependencies a dependencies también cambia el lock.
+function depEntries(text: string | undefined): Map<string, string> {
+  const pkg = text === undefined ? {} : (JSON.parse(text) as Record<string, Record<string, string> | undefined>);
+  const entries = new Map<string, string>();
+  for (const field of DEP_FIELDS) for (const [name, range] of Object.entries(pkg[field] ?? {})) entries.set(name, `${field} ${range}`);
+  return entries;
+}
+
+// Las dependencias que la rama cambió en algún package.json sin tocar el lock. undefined si no hay nada que actualizar.
+export async function depsWithoutLock(repo: string): Promise<{ lock: string; deps: string[] } | undefined> {
+  const lock = LOCKFILES.find((f) => existsSync(join(repoDir(repo), f)));
+  if (!lock) return undefined;
+  const changed = await changedFiles(repo);
+  if (changed.includes(lock)) return undefined;
+  const base = await mergeBase(repo);
+  const deps = new Set<string>();
+  for (const path of changed.filter((f) => f === 'package.json' || f.endsWith('/package.json'))) {
+    const before = depEntries(await fileAt(repo, base, path));
+    const after = depEntries(await fileAt(repo, 'HEAD', path));
+    for (const name of new Set([...before.keys(), ...after.keys()])) if (before.get(name) !== after.get(name)) deps.add(name);
+  }
+  return deps.size ? { lock, deps: [...deps] } : undefined;
 }
 
 export async function branchDiff(repo: string): Promise<string> {
