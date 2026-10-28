@@ -34,6 +34,7 @@ Solo para que entiendas el conjunto. Las otras tareas las hacen otros agentes.
 
 1. Lee el `CLAUDE.md` del repo y el código que la tarea manda imitar antes de escribir.
 2. Implementa **solo esta tarea**, con sus tests. No adelantes trabajo de otras tareas.
+   Si necesitas un paquete nuevo, agrégalo a mano al `package.json` y commitea. No lo instales ni toques el lock: el flujo frena y eso lo hace una persona. Tampoco escribas código ni tests que acepten que el paquete falta.
 3. Verifica antes de commitear:
 
 {{checks}}

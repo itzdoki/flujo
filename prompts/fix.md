@@ -22,6 +22,7 @@ Cada tarea es un commit.
 
 1. Encuentra la causa y arréglala ahí. No tapes el síntoma: nada de saltear tests, `any`, `eslint-disable` ni aflojar un test, salvo que el test esté mal y lo puedas justificar en `notes`.
 2. Arregla lo mínimo. En lint, solo los errores que lista el reporte, en líneas que tocó la rama: no reformatees el resto del archivo.
+   Si el arreglo necesita un paquete nuevo, agrégalo a mano al `package.json` y commitea. No lo instales ni toques el lock: el flujo frena y eso lo hace una persona.
 3. Cada arreglo va como fixup del commit de la tarea a la que pertenece: `git add <archivos>` y `git commit --fixup=<sha>`. El flujo los aplasta antes de abrir la PR. Si el arreglo toca dos tareas, haz dos fixups.
 4. No reescribas historia: sin rebase, reset, amend ni checkout. No dejes nada sin commitear.
 5. Verifica con los checks del repo:
