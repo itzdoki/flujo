@@ -302,6 +302,8 @@ async function implementPhase(ctx: Ctx, plan: Plan): Promise<void> {
     if (entry.status === 'done') continue;
     // Con commit y sin typecheck: la cortó un freno o una caída. No se vuelve a implementar, se retoma desde el typecheck.
     if (!entry.shas.length) await implementTask(ctx, plan, task, entry);
+    // Antes del typecheck: sin el paquete instalado, el fix gastaría rondas en rodearlo.
+    await lockBrake(ctx, task.repo);
     await ensureGreen(ctx, task.repo, `el typecheck falla después de ${task.id}`, () => repoChecks(task.repo, ['typecheck']));
     entry.status = 'done';
     ctx.run.save();
@@ -347,10 +349,23 @@ async function implementTask(ctx: Ctx, plan: Plan, task: Plan['tasks'][number], 
 async function checkPhase(ctx: Ctx, repos: string[]): Promise<void> {
   enter(ctx, 'check');
   for (const repo of repos) {
+    await lockBrake(ctx, repo);
     await regenerate(ctx, repo);
     await ensureGreen(ctx, repo, 'los checks de la rama fallan', () => repoChecks(repo, ['typecheck', 'lint', 'test']));
   }
   leave(ctx, 'check');
+}
+
+// El flujo no instala paquetes: si la rama cambia dependencias, el lock lo actualiza una persona.
+async function lockBrake(ctx: Ctx, repo: string): Promise<void> {
+  const gap = await git.depsWithoutLock(repo);
+  if (!gap) return;
+  const update = gap.lock === 'pnpm-lock.yaml' ? 'pnpm install --lockfile-only' : 'npm install --package-lock-only';
+  throw new StopHere(
+    `${repo}: la rama cambia dependencias (${gap.deps.join(', ')}) y no actualiza \`${gap.lock}\`. ` +
+      `En \`${repoDir(repo)}\`, rama \`${ctx.branch}\`: correr \`${update}\`, commitear el lock con ` +
+      `\`git commit --fixup=<commit que tocó package.json>\` y correr \`node src/cli.ts run ${ctx.issue.identifier}\` para seguir`,
+  );
 }
 
 // Lo generado lo corre el flujo y no el modelo: así no hace falta darle permiso de ejecutar scripts del repo.
@@ -398,6 +413,8 @@ async function fixAgent(ctx: Ctx, repo: string, reason: string, report: string):
   });
   const dirty = await git.statusShort(repo);
   if (dirty) throw new Error(`${repo}: el fix dejó cambios sin commitear:\n${dirty}`);
+  // Un fix que agregó un paquete y no lo pudo instalar no falló: espera el lock.
+  await lockBrake(ctx, repo);
   if (!out.fixed) throw new Error(`${repo}: el fix no pudo con «${reason}»: ${out.notes}`);
   const made = await git.commitsSince(repo, before);
   ctx.run.log(`  fix: ${made.length} commit(s). ${out.notes.slice(0, 200)}`);
