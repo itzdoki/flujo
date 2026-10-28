@@ -8,7 +8,7 @@ import { openDraftPr } from './github.ts';
 import { comment, getIssue, issueMarkdown, queuedIssues, type Issue } from './linear.ts';
 import { notify } from './notify.ts';
 import { prompt } from './prompts.ts';
-import { Run } from './run.ts';
+import { Run, type TaskEntry } from './run.ts';
 import {
   enrichSchema,
   FIX,
@@ -300,43 +300,48 @@ async function implementPhase(ctx: Ctx, plan: Plan): Promise<void> {
   for (const task of plan.tasks) {
     const entry = ctx.run.state.tasks[task.id];
     if (entry.status === 'done') continue;
-    await git.resetWorkTree(task.repo);
-    const before = await git.head(task.repo);
-    const out = await agent<Implement>({
-      run: ctx.run,
-      step: 'implement',
-      label: `implement-${task.id}`,
-      cwd: repoDir(task.repo),
-      tools: WRITE_TOOLS,
-      schema: IMPLEMENT,
-      prompt: prompt('implement', {
-        taskId: task.id,
-        repo: task.repo,
-        branch: ctx.branch,
-        base: repoConfig(task.repo).base,
-        repoNotes: repoNotes(task.repo),
-        taskTitle: task.title,
-        taskInstructions: task.instructions,
-        taskFiles: task.files.map((f) => `\`${f}\``).join(', ') || '(no indicados)',
-        commitMessage: task.commit_message,
-        spec: ctx.spec,
-        planOutline: planOutline(plan),
-        ledger: ledger(ctx),
-        checks: checksMarkdown(task.repo),
-      }),
-    });
-    const shas = await git.commitsSince(task.repo, before);
-    const dirty = await git.statusShort(task.repo);
-    if (!shas.length) throw new Error(`${task.id}: el implementador no dejó commit. ${out.notes}`);
-    if (dirty) throw new Error(`${task.id}: quedaron cambios sin commitear:\n${dirty}`);
-    if (shas.length > 1) ctx.run.log(`  ${task.id} dejó ${shas.length} commits en vez de uno`);
-    Object.assign(entry, { shas, notes: out.notes, deviations: out.deviations });
-    ctx.run.save();
+    // Con commit y sin typecheck: la cortó un freno o una caída. No se vuelve a implementar, se retoma desde el typecheck.
+    if (!entry.shas.length) await implementTask(ctx, plan, task, entry);
     await ensureGreen(ctx, task.repo, `el typecheck falla después de ${task.id}`, () => repoChecks(task.repo, ['typecheck']));
     entry.status = 'done';
     ctx.run.save();
   }
   leave(ctx, 'implement');
+}
+
+async function implementTask(ctx: Ctx, plan: Plan, task: Plan['tasks'][number], entry: TaskEntry): Promise<void> {
+  await git.resetWorkTree(task.repo);
+  const before = await git.head(task.repo);
+  const out = await agent<Implement>({
+    run: ctx.run,
+    step: 'implement',
+    label: `implement-${task.id}`,
+    cwd: repoDir(task.repo),
+    tools: WRITE_TOOLS,
+    schema: IMPLEMENT,
+    prompt: prompt('implement', {
+      taskId: task.id,
+      repo: task.repo,
+      branch: ctx.branch,
+      base: repoConfig(task.repo).base,
+      repoNotes: repoNotes(task.repo),
+      taskTitle: task.title,
+      taskInstructions: task.instructions,
+      taskFiles: task.files.map((f) => `\`${f}\``).join(', ') || '(no indicados)',
+      commitMessage: task.commit_message,
+      spec: ctx.spec,
+      planOutline: planOutline(plan),
+      ledger: ledger(ctx),
+      checks: checksMarkdown(task.repo),
+    }),
+  });
+  const shas = await git.commitsSince(task.repo, before);
+  const dirty = await git.statusShort(task.repo);
+  if (!shas.length) throw new Error(`${task.id}: el implementador no dejó commit. ${out.notes}`);
+  if (dirty) throw new Error(`${task.id}: quedaron cambios sin commitear:\n${dirty}`);
+  if (shas.length > 1) ctx.run.log(`  ${task.id} dejó ${shas.length} commits en vez de uno`);
+  Object.assign(entry, { shas, notes: out.notes, deviations: out.deviations });
+  ctx.run.save();
 }
 
 async function checkPhase(ctx: Ctx, repos: string[]): Promise<void> {
