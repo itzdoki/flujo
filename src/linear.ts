@@ -73,6 +73,43 @@ export async function comment(issueId: string, body: string): Promise<void> {
   });
 }
 
+async function startedStates(issueId: string): Promise<{ id: string; name: string }[]> {
+  const data = await gql<{ issue: { team: { states: { nodes: { id: string; name: string; position: number }[] } } } }>(
+    `query ($id: String!) {
+      issue(id: $id) { team { states(filter: { type: { eq: "started" } }) { nodes { id name position } } } }
+    }`,
+    { id: issueId },
+  );
+  return data.issue.team.states.nodes.sort((a, b) => a.position - b.position);
+}
+
+async function setState(issueId: string, stateId: string): Promise<void> {
+  await gql(`mutation ($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`, {
+    id: issueId,
+    input: { stateId },
+  });
+}
+
+// Pasa la issue al primer estado "started" de su equipo (In Progress), solo si todavía no arrancó:
+// no la saca de In Review ni de otro estado que haya puesto una persona.
+export async function markStarted(issue: Issue): Promise<string | undefined> {
+  if (!['triage', 'backlog', 'unstarted'].includes(issue.state.type)) return undefined;
+  const started = (await startedStates(issue.id))[0];
+  if (!started) return undefined;
+  await setState(issue.id, started.id);
+  return started.name;
+}
+
+// Al terminar, la pasa al estado "started" de revisión (In Review). Si el equipo no tiene uno, o la issue
+// ya se cerró, no la toca.
+export async function markInReview(issue: Issue): Promise<string | undefined> {
+  if (['completed', 'canceled'].includes(issue.state.type)) return undefined;
+  const review = (await startedStates(issue.id)).find((s) => /review/i.test(s.name));
+  if (!review) return undefined;
+  await setState(issue.id, review.id);
+  return review.name;
+}
+
 export function issueMarkdown(i: Issue): string {
   const indent = (s: string) => s.trim().replaceAll('\n', '\n  ');
   const lines = [

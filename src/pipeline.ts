@@ -5,7 +5,7 @@ import { checksMarkdown, repoChecks, verifyEachCommit, type CheckResult } from '
 import { config, repoConfig, repoDir, REPOS_DIR } from './config.ts';
 import * as git from './git.ts';
 import { openDraftPr } from './github.ts';
-import { comment, getIssue, issueMarkdown, queuedIssues, type Issue } from './linear.ts';
+import { comment, getIssue, issueMarkdown, markInReview, markStarted, queuedIssues, type Issue } from './linear.ts';
 import { notify } from './notify.ts';
 import { prompt } from './prompts.ts';
 import { Run, type TaskEntry } from './run.ts';
@@ -116,8 +116,12 @@ async function pipeline(run: Run, opts: RunOpts): Promise<void> {
   await releasePhase(ctx, results, openFindings, repos);
   await qaNotesPhase(ctx, results, repos);
 
-  run.set({ status: 'done', phase: 'done' });
   const prs = Object.values(run.state.prs);
+  if (prs.length) {
+    const moved = await markInReview(issue);
+    if (moved) run.log(`issue pasada a ${moved}`);
+  }
+  run.set({ status: 'done', phase: 'done' });
   run.log(`✓ listo${prs.length ? `: ${prs.join(' ')}` : ' (modo local, nada publicado)'}`);
   await notify(`${issue.identifier} listo`, prs.length ? prs.join('\n') : 'modo local: nada publicado');
 }
@@ -138,6 +142,10 @@ async function loadIssue(run: Run, issueFile?: string): Promise<Issue> {
     saved ?? (issueFile ? (JSON.parse(readFileSync(issueFile, 'utf8')) as Issue) : await getIssue(run.state.issue));
   run.writeJson('issue.json', issue);
   if (!run.state.local && !issue.assignee?.isMe) throw new Error('la issue no está asignada a ti; el flujo solo toma las tuyas');
+  if (!run.state.local) {
+    const moved = await markStarted(issue);
+    if (moved) run.log(`issue pasada a ${moved}`);
+  }
   return issue;
 }
 

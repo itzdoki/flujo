@@ -30,11 +30,11 @@ Los modelos y los esfuerzos están en `config/flujo.json`. Los repos sobre los q
 - Cargar tu `~/.claude/settings.json`. Corre con `--setting-sources project`, así que no hereda tus permisos ni tus hooks.
 - Tomar issues que no estén asignadas a ti.
 
-Lo único que publica: la rama, la PR en draft y comentarios en la issue (preguntas o guion de QA).
+Lo único que publica: la rama, la PR en draft, comentarios en la issue (preguntas o guion de QA) y el estado de la issue. Al tomarla la pasa a In Progress (el primer estado "started" de su equipo), si todavía no había arrancado; al abrir las PRs, a In Review (el estado "started" con "review" en el nombre).
 
 ## Instalación
 
-1. Crea una API key personal de Linear (Settings → Security & access → Personal API keys) y guárdala:
+1. Crea una API key personal de Linear (Settings → Security & access → Personal API keys) con los permisos Read, Create and update issues (para mover la issue a In Progress y a In Review) y Create comments, y guárdala:
 
    ```sh
    mkdir -p ~/.config/flujo
