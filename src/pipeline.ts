@@ -327,6 +327,8 @@ async function implementTask(ctx: Ctx, plan: Plan, task: Plan['tasks'][number], 
     step: 'implement',
     label: `implement-${task.id}`,
     cwd: repoDir(task.repo),
+    // Sin esto, leer otro repo clonado (p. ej. el dashboard como referencia) cae fuera de la carpeta y se deniega.
+    addDirs: [REPOS_DIR],
     tools: WRITE_TOOLS,
     schema: IMPLEMENT,
     prompt: prompt('implement', {
@@ -406,6 +408,7 @@ async function fixAgent(ctx: Ctx, repo: string, reason: string, report: string):
     step: 'fix',
     label: `fix-${ctx.run.state.phase}-${repo}`,
     cwd: repoDir(repo),
+    addDirs: [REPOS_DIR],
     tools: WRITE_TOOLS,
     schema: FIX,
     prompt: prompt('fix', {
