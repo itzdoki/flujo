@@ -25,6 +25,7 @@ Cada tarea es un commit.
    Si el arreglo necesita un paquete nuevo, agrégalo a mano al `package.json` y commitea. No lo instales ni toques el lock: el flujo frena y eso lo hace una persona.
 3. Cada arreglo va como fixup del commit de la tarea a la que pertenece: `git add <archivos>` y `git commit --fixup=<sha>`. El flujo los aplasta antes de abrir la PR. Si el arreglo toca dos tareas, haz dos fixups.
 4. No reescribas historia: sin rebase, reset, amend ni checkout. No dejes nada sin commitear.
+   Si creaste un archivo de prueba suelto, bórralo con `git clean -f -- <ruta>` (`rm` está bloqueado). Para descartar cambios de un archivo versionado, `git restore <ruta>`.
 5. Verifica con los checks del repo:
 
 {{checks}}

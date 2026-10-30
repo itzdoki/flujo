@@ -42,5 +42,6 @@ Solo para que entiendas el conjunto. Las otras tareas las hacen otros agentes.
    El lint cuenta solo los errores que agrega tu cambio: no arregles ni reformatees lo que ya estaba mal en el archivo.
 
 4. Haz un solo commit: `git add` de los archivos que tocaste y `git commit -m "<mensaje>"`. El mensaje va en inglés con conventional commits; ajusta el sugerido si cambió el alcance. Sin `--amend` ni `--no-verify`. No dejes nada sin commitear.
+   Si creaste un archivo de prueba suelto, bórralo con `git clean -f -- <ruta>` (`rm` está bloqueado). Para descartar cambios de un archivo versionado, `git restore <ruta>`; nunca `git checkout`.
 5. Si algo del plan está mal o no se puede hacer como dice, resuelve lo más razonable y explícalo en `deviations`.
 6. `done`: true solo si el commit está hecho y los checks pasan.

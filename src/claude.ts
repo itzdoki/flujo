@@ -56,6 +56,8 @@ export const WRITE_TOOLS = [
   'Bash(git mv:*)',
   // Descartar cambios de un archivo sin `git checkout --`, que también cambia de rama y por eso está en DENY.
   'Bash(git restore:*)',
+  // Borrar un archivo nuevo sin commitear: `rm` no está permitido, y el `--` deja afuera `-d` y `-x`.
+  'Bash(git clean -f --:*)',
   'Bash(git commit:*)',
   'Bash(npx tsc:*)',
   'Bash(npx jest:*)',
