@@ -5,7 +5,10 @@ import { sh, tail } from './sh.ts';
 export type AcceptanceResult = Acceptance & { exit: number; output: string };
 
 // Los comandos los escribe el agente del plan: se corren sin shell y solo si empiezan con un prefijo permitido.
-const SHELL_CHARS = /[;&|`$<>\\\n\r]/;
+// Dentro de comillas no hay nada que interpretar: un `-t "a|b"` llega a jest como la regex `a|b`.
+const SHELL_CHARS = /[;&|`$<>\\]/;
+const LINE_BREAK = /[\n\r]/;
+const QUOTED = /"[^"]*"|'[^']*'/g;
 
 export function splitCommand(cmd: string): string[] | undefined {
   const argv: string[] = [];
@@ -36,7 +39,7 @@ export function splitCommand(cmd: string): string[] | undefined {
 }
 
 export function commandProblem(cmd: string, allow: string[]): string | undefined {
-  if (SHELL_CHARS.test(cmd)) return `\`${cmd}\` usa caracteres de shell`;
+  if (LINE_BREAK.test(cmd) || SHELL_CHARS.test(cmd.replace(QUOTED, ''))) return `\`${cmd}\` usa caracteres de shell`;
   const argv = splitCommand(cmd);
   if (!argv?.length) return `\`${cmd}\` tiene comillas sin cerrar o está vacío`;
   const ok = allow.some((prefix) => prefix.split(' ').every((word, i) => argv[i] === word));
