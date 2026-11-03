@@ -29,7 +29,7 @@ Estás en `{{reposDir}}`, con estos clones:
 ## acceptance
 
 - Un ítem por criterio de aceptación del spec. `id`: `AC1`, `AC2`, …
-- `command` sale con código 0 si y solo si el criterio se cumple. Corre en la raíz del repo indicado y **sin shell**: nada de `|`, `&&`, `;`, `$`, `>`, `<` ni backticks.
+- `command` sale con código 0 si y solo si el criterio se cumple. Corre en la raíz del repo indicado y **sin shell**: fuera de comillas, nada de `|`, `&&`, `;`, `$`, `>`, `<` ni backticks. Dentro de un argumento entre comillas van tal cual (p. ej. `-t "alta|baja"` es la regex de jest), pero en una sola línea.
 - Tiene que empezar con alguno de: {{allow}}.
 - Prefiere tests puntuales (la ruta del spec y `-t "nombre del test"`) a la suite entera. Si el test todavía no existe, alguna tarea tiene que escribirlo y sus `instructions` lo dicen, con el nombre exacto del test.
 - Un comando de tests que no corre ningún test cuenta como falla, y con `-t` también cuenta como falla si alguno de los archivos listados no tiene un test con ese nombre. Mejor un ítem por archivo que un `-t` sobre varios.
